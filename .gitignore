@@ -1,0 +1,44 @@
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Logs
+*.log
+
+# Visual Studio / VS Code
+.vscode/
+.vs/
+
+# Environment variables
+*.env
+
+# Publish output
+publish/
+out/
+
+# ASP.NET Core configuration secrets
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json
+
+# Dotnet tools cache
+.dotnet/tools/
+
+# NuGet packages (optional, usually no need to ignore)
+*.nupkg
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Rider / JetBrains
+.idea/
+
+# Temporary files
+*.tmp
