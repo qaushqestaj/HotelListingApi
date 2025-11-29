@@ -4,23 +4,20 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HotelListingApi.Data
+namespace HotelListingApi.DTOs.Hotel
 {
-    public class Hotel
+    public class CreateHotelDto
     {
-        public int Id { get; set; }
-
+        [Required]
         public required string Name { get; set; }
 
+        [MaxLength(150)]
         public required string Address { get; set; }
 
+        [Range(1, 5)]
         public double Rating { get; set; }
-        public decimal PerNightRate { get; set; }
 
+        [Required]
         public int CountryId { get; set; }
-        public Country? Country { get; set; }
-
-        public ICollection<HotelAdmin> Admins { get; set; } = [];
-        public ICollection<Booking> Bookings { get; set; } = [];
     }
 }

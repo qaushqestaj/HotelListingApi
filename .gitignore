@@ -26,6 +26,7 @@ out/
 appsettings.Development.json
 appsettings.Local.json
 appsettings.*.json
+appsettings.json
 
 # Dotnet tools cache
 .dotnet/tools/

@@ -5,37 +5,99 @@ Accept: application/json
 
 ###
 
-
 POST {{HotelListingApi_HostAddress}}/api/hotels
 Content-Type: application/json
 
 {
-    "id": 4,
-    "name": "Hotel California",
-    "address": "42 Sunset Boulevard",
-    "rating": 4.5
+    "name": "Hotel Kosova",
+    "address": "42 Sunset Boulevard, Los Pristina",
+    "rating": 4.5,
+    "CountryId": 2
 }
 
 ###
-
 PUT {{HotelListingApi_HostAddress}}/api/hotels/{{id}}
 Content-Type: application/json
 
 {
-    //Hotel
+    "Id": 5,
+    "Name": "Hotel Adriatic",
+    "Address": "42 Sunset Boulevard, Los Pristina",
+    "Rating": 4.7,
+    "CountryId": 2
 }
 
 ###
 
-@id=4
 DELETE {{HotelListingApi_HostAddress}}/api/hotels/{{id}}
 
 ###
-
-@id=4
+@id=5
 GET {{HotelListingApi_HostAddress}}/api/hotels/{{id}}
+
+###
+
+// COUNTRIES CONTROLLER TESTS
+
+GET {{HotelListingApi_HostAddress}}/api/countries
+Accept: application/json
+
+###
+
+POST {{HotelListingApi_HostAddress}}/api/countries
+Content-Type: application/json
+
+{
+    "name": "Spain",
+    "shortName": "ES"
+}
+
+###
+
+PUT {{HotelListingApi_HostAddress}}/api/countries/{{id}}
+Content-Type: application/json
+
+{
+    "id": 2,
+    "name": "Kosovo",
+    "shortName": "XK"
+}
+
+###
+
+DELETE {{HotelListingApi_HostAddress}}/api/countries/{{id}}
+###
+
+@id=2
+GET {{HotelListingApi_HostAddress}}/api/countries/{{id}}
 Content-Type: application/json
 
 ###
+
+// USERS CONTROLLER TESTS
+
+POST {{HotelListingApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "user@localhosttest.com",
+    "password": "P@ssword1"
+}
+
+###
+
+POST {{HotelListingApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+    "email": "admin@localhosttest.com",
+    "password": "P@ssword1",
+    "firstName": "Qaush",
+    "lastName": "Qestaj",
+    "role": "Administrator"
+}
+
+###
+
 
 

@@ -2,90 +2,72 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HotelListingApi.Contracts;
 using HotelListingApi.Data;
+using HotelListingApi.DTOs.Hotel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace HotelListingApi.Controllers
+namespace HotelListingApi.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class HotelsController(IHotelsService hotelsService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class HotelsController : ControllerBase
+
+    [HttpGet("")]
+    public async Task<ActionResult<IEnumerable<GetHotelDto>>> GetHotels()
     {
-        readonly private static List<Hotel> hotels =
-        [
-            new Hotel
-            {
-                Id = 1,
-                Name = "Hotel California",
-                Address = "42 Sunset Boulevard",
-                Rating = 4.5
-            },
-            new Hotel
-            {
-                Id = 2,
-                Name = "Grand Budapest Hotel",
-                Address = "1 Alpine Drive",
-                Rating = 4.8
-            }
-        ];
+        var hotels = await hotelsService.GetHotels();
 
-        [HttpGet("")]
-        public ActionResult<IEnumerable<IEnumerable<Hotel>>> GetTModel()
+        return Ok(hotels);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<GetHotelDto>> GetHotelById(int id)
+    {
+        var hotel = await hotelsService.GetHotelById(id);
+
+        if (hotel == null)
         {
-            return Ok(hotels);
+            return NotFound();
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<Hotel> GetHotelById(int id)
+        return Ok(hotel);
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> PutHotel(int id, UpdateHotelDto model)
+    {
+        if (id != model.Id)
         {
-            var hotel = hotels.FirstOrDefault(h => h.Id == id);
-            if (hotel == null)
-            {
-                return NotFound();
-            }
-            return Ok(hotel);
+            return BadRequest("ID mismatch.");
         }
 
-        [HttpPost("")]
-        public ActionResult<Hotel> PostHotel(Hotel model)
-        {
-            if (hotels.Any(h => h.Id == model.Id))
-            {
-                return Conflict("A hotel with the same ID already exists.");
-            }
-            hotels.Add(model);
-            return CreatedAtAction(nameof(GetHotelById), new { id = model.Id }, model);
-        }
+        await hotelsService.PutHotel(id, model);
 
+        return NoContent();
+    }
 
+    [HttpPost("")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto model)
+    {
 
-        [HttpPut("{id}")]
-        public IActionResult PutHotel(int id, Hotel model)
-        {
+        var hotel = await hotelsService.PostHotel(model);
 
-            var existingHotel = hotels.FirstOrDefault(h => h.Id == id);
-            if (existingHotel == null)
-            {
-                return NotFound();
-            }
+        return CreatedAtAction(nameof(GetHotelById), new { id = hotel.Id }, hotel);
+    }
 
-            existingHotel.Name = model.Name;
-            existingHotel.Address = model.Address;
-            existingHotel.Rating = model.Rating;
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Administrator")]
+    public async Task<IActionResult> DeleteHotel(int id)
+    {
+        await hotelsService.DeleteHotelById(id);
 
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public ActionResult<Hotel> DeleteHotelById(int id)
-        {
-            var hotel = hotels.FirstOrDefault(h => h.Id == id);
-            if (hotel == null)
-            {
-                return NotFound(new { Message = "Hotel not found." });
-            }
-            hotels.Remove(hotel);
-            return Ok(hotel);
-        }
+        return NoContent();
     }
 }
