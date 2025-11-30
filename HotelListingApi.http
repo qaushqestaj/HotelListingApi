@@ -1,7 +1,8 @@
 @HotelListingApi_HostAddress = http://localhost:5222
-
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTEzY2Y0MC00Y2FiLTQ2NzYtYjg4NC0yOGMzODRhYjZkN2QiLCJlbWFpbCI6ImhvdGVsYWRtaW4yQGxvY2FsaG9zdC5jb20iLCJqdGkiOiJjZTUxOGEwMy0yZTIzLTQ3NDUtODIzOC00ZjJjNzE5ODQzMTgiLCJuYW1lIjoiSG90ZWwgQWRtaW4iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJIb3RlbCBBZG1pbiIsImV4cCI6MTc2NDQ0MDg2MCwiaXNzIjoiSG90ZWxMaXN0aW5nQXBpIiwiYXVkIjoiSG90ZWxMaXN0aW5nQVBJQ2xpZW50In0.V8Q-9-6WEMcoWdP5LSWZ5KblXmyoZDzxTonfAmDhL84
 GET {{HotelListingApi_HostAddress}}/api/hotels
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
@@ -80,7 +81,7 @@ POST {{HotelListingApi_HostAddress}}/api/auth/login
 Content-Type: application/json
 
 {
-    "email": "user@localhosttest.com",
+    "email": "hoteladmin2@localhost.com",
     "password": "P@ssword1"
 }
 
@@ -90,11 +91,13 @@ POST {{HotelListingApi_HostAddress}}/api/auth/register
 Content-Type: application/json
 
 {
-    "email": "admin@localhosttest.com",
+     "email": "hoteladmin2@localhost.com",
     "password": "P@ssword1",
-    "firstName": "Qaush",
-    "lastName": "Qestaj",
-    "role": "Administrator"
+    "firstName": "Hotel",
+    "lastName": "Admin",
+    "role": "Hotel Admin",
+    "associatedHotelId": 5
+
 }
 
 ###

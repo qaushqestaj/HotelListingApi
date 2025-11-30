@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using HotelListing.Api.Results;
-using HotelListingApi.Constans;
+using HotelListingApi.Common.Constans;
 using HotelListingApi.Contracts;
 using HotelListingApi.Data;
 using HotelListingApi.Data.Enums;
@@ -13,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelListingApi.Services
 {
-    public class BookingService(HotelListingDbContext context, IUsersService usersService) : IBookingService
+    public class BookingService(HotelListingDbContext context, IUsersService usersService, IMapper mapper) : IBookingService
     {
         public async Task<Result<IEnumerable<GetBookingDto>>> GetUserBookingsForHotelAsync(int hotelId)
         {
@@ -34,18 +36,19 @@ namespace HotelListingApi.Services
             var bookings = await context.Bookings
                 .Where(b => b.HotelId == hotelId && b.UserId == userId)
                 .OrderBy(b => b.CheckIn)
-                .Select(b => new GetBookingDto(
-                    b.Id,
-                    b.HotelId,
-                    b.Hotel!.Name,
-                    b.CheckIn,
-                    b.CheckOut,
-                    b.Guests,
-                    b.TotalPrice,
-                    b.Status.ToString(),
-                    b.CreatedAtUtc,
-                    b.UpdatedAtUtc
-                ))
+                .ProjectTo<GetBookingDto>(mapper.ConfigurationProvider)
+                // .Select(b => new GetBookingDto(
+                //     b.Id,
+                //     b.HotelId,
+                //     b.Hotel!.Name,
+                //     b.CheckIn,
+                //     b.CheckOut,
+                //     b.Guests,
+                //     b.TotalPrice,
+                //     b.Status.ToString(),
+                //     b.CreatedAtUtc,
+                //     b.UpdatedAtUtc
+                // ))
                 .ToListAsync();
 
             return Result<IEnumerable<GetBookingDto>>.Success(bookings);
@@ -68,18 +71,19 @@ namespace HotelListingApi.Services
             var bookings = await context.Bookings
                 .Where(b => b.HotelId == hotelId)
                 .OrderBy(b => b.CheckIn)
-                .Select(b => new GetBookingDto(
-                    b.Id,
-                    b.HotelId,
-                    b.Hotel!.Name,
-                    b.CheckIn,
-                    b.CheckOut,
-                    b.Guests,
-                    b.TotalPrice,
-                    b.Status.ToString(),
-                    b.CreatedAtUtc,
-                    b.UpdatedAtUtc
-                ))
+                .ProjectTo<GetBookingDto>(mapper.ConfigurationProvider)
+                // .Select(b => new GetBookingDto(
+                //     b.Id,
+                //     b.HotelId,
+                //     b.Hotel!.Name,
+                //     b.CheckIn,
+                //     b.CheckOut,
+                //     b.Guests,
+                //     b.TotalPrice,
+                //     b.Status.ToString(),
+                //     b.CreatedAtUtc,
+                //     b.UpdatedAtUtc
+                // ))
                 .ToListAsync();
 
             return Result<IEnumerable<GetBookingDto>>.Success(bookings);
@@ -97,16 +101,6 @@ namespace HotelListingApi.Services
                 return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "User not authenticated."));
             }
 
-            var nights = createBookingDto.CheckOut.DayNumber - createBookingDto.CheckIn.DayNumber;
-            if (nights <= 0)
-            {
-                return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "Check-out date must be after check-in date."));
-            }
-
-            if (createBookingDto.Guests <= 0)
-            {
-                return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "Number of guests must be at least 1."));
-            }
 
             bool overlaps = await context.Bookings.AnyAsync(b =>
               b.HotelId == createBookingDto.HotelId &&
@@ -122,40 +116,22 @@ namespace HotelListingApi.Services
             }
 
             var hotel = await context.Hotels.FindAsync(createBookingDto.HotelId);
-            if (hotel == null)
+            if (hotel is null)
             {
                 return Result<GetBookingDto>.Failure(new Error(ErrorCodes.NotFound, "Hotel not found."));
             }
 
 
+            var nights = createBookingDto.CheckOut.DayNumber - createBookingDto.CheckIn.DayNumber;
             var totalPrice = hotel.PerNightRate * nights;
 
-            var booking = new Booking
-            {
-                HotelId = createBookingDto.HotelId,
-                UserId = userId,
-                CheckIn = createBookingDto.CheckIn,
-                CheckOut = createBookingDto.CheckOut,
-                Guests = createBookingDto.Guests,
-                TotalPrice = totalPrice,
-                Status = BookingStatus.Pending
-            };
+            var booking = mapper.Map<Booking>(createBookingDto);
+            booking.UserId = userId;
 
             context.Bookings.Add(booking);
             await context.SaveChangesAsync();
 
-            var getBookingDto = new GetBookingDto(
-                booking.Id,
-                hotel.Id,
-                hotel.Name,
-                booking.CheckIn,
-                booking.CheckOut,
-                booking.Guests,
-                booking.TotalPrice,
-                booking.Status.ToString(),
-                booking.CreatedAtUtc,
-                booking.UpdatedAtUtc
-            );
+            var getBookingDto = mapper.Map<GetBookingDto>(booking);
 
             return Result<GetBookingDto>.Success(getBookingDto);
         }
@@ -169,19 +145,10 @@ namespace HotelListingApi.Services
                 return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "User not authenticated."));
             }
 
-            var nights = updateBookingDto.CheckOut.DayNumber - updateBookingDto.CheckIn.DayNumber;
-            if (nights <= 0)
-            {
-                return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "Check-out date must be after check-in date."));
-            }
-
-            if (updateBookingDto.Guests <= 0)
-            {
-                return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "Number of guests must be at least 1."));
-            }
 
             bool overlaps = await context.Bookings.AnyAsync(b =>
                 b.HotelId == hotelId &&
+                b.Id != bookingId &&
                 b.CheckIn < updateBookingDto.CheckOut &&
                 b.CheckOut > updateBookingDto.CheckIn &&
                 b.Status != BookingStatus.Cancelled &&
@@ -207,27 +174,15 @@ namespace HotelListingApi.Services
                 return Result<GetBookingDto>.Failure(new Error(ErrorCodes.Validation, "Cannot update a cancelled booking."));
             }
 
+            mapper.Map(updateBookingDto, booking);
             var perNight = booking.Hotel!.PerNightRate;
-            booking.CheckIn = updateBookingDto.CheckIn;
-            booking.CheckOut = updateBookingDto.CheckOut;
-            booking.Guests = updateBookingDto.Guests;
-            booking.TotalPrice = perNight * (updateBookingDto.CheckOut.DayNumber - updateBookingDto.CheckIn.DayNumber);
+            var nights = updateBookingDto.CheckOut.DayNumber - updateBookingDto.CheckIn.DayNumber;
+            booking.TotalPrice = perNight * nights;
             booking.UpdatedAtUtc = DateTime.UtcNow;
 
             await context.SaveChangesAsync();
 
-            var getBookingDto = new GetBookingDto(
-                booking.Id,
-                booking.HotelId,
-                booking.Hotel!.Name,
-                booking.CheckIn,
-                booking.CheckOut,
-                booking.Guests,
-                booking.TotalPrice,
-                booking.Status.ToString(),
-                booking.CreatedAtUtc,
-                booking.UpdatedAtUtc
-            );
+            var getBookingDto = mapper.Map<GetBookingDto>(booking);
 
             return Result<GetBookingDto>.Success(getBookingDto);
         }

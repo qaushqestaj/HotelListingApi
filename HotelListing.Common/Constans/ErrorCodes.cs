@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HotelListingApi.Constans;
+namespace HotelListingApi.Common.Constans;
 
 public static class ErrorCodes
 {

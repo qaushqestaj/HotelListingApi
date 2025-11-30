@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HotelListing.Api.Results;
-using HotelListingApi.Constans;
+using HotelListingApi.Common.Constans;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelListingApi.Controllers;

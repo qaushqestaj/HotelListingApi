@@ -1,0 +1,53 @@
+@json = application/json
+@host = https://localhost:5222
+@hotelId = 4
+@bookingId = 1
+@today = {{${{$localDatetime iso8601}}}}
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlNDQxODdmOS1lYzg2LTRhZDUtYThmMS0yMWU2ZGZhNTBiOGIiLCJlbWFpbCI6ImhvdGVsYWRtaW5AbG9jYWxob3N0LmNvbSIsImp0aSI6ImFkY2ZiMTQ3LTgzNWItNDJmYi1hYjA1LTM2ZjA5YjEwZDQxNyIsIm5hbWUiOiJIb3RlbCBBZG1pbiIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkhvdGVsIEFkbWluIiwiZXhwIjoxNzY0NDM5Mjc2LCJpc3MiOiJIb3RlbExpc3RpbmdBcGkiLCJhdWQiOiJIb3RlbExpc3RpbmdBUElDbGllbnQifQ.ENFzMwRqu1WmCLp9eMh6ojGOJ7oOGXJuaTLCMiODM2c
+
+POST {{host}}/api/hotels/{{hotelId}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "hotelId": {{hotelId}},
+    "checkIn": "2025-10-10",
+    "checkOut": "2025-10-15",
+    "guests": 2
+}
+
+###
+
+
+// Create a booking - different hotel, singe stay night
+POST {{host}}/api/hotels/2/bookings
+Authorization : Bearer {{token}}
+Content-Type: {{json}}
+
+{
+    "hotelId": 2,
+    "checkIn": "2025-11-01",
+    "checkOut": "2025-11-02",
+    "guests": 1
+}
+
+###
+
+// Update a booking - overlapping dates
+PUT {{host}}/api/hotels/5/bookings/1
+Authorization : Bearer {{token}}
+Content-Type: {{json}}  
+
+{
+    "checkIn": "2025-10-12",
+    "checkOut": "2025-10-18",
+    "guests": 2
+}
+
+###
+
+PUT {{host}}/api/hotels/5/bookings/1/admin/confirm
+Authorization : Bearer {{token}}
+
+###
+
